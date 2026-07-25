@@ -1,0 +1,21 @@
+{
+  "name": "@erbws/mmkv-cj",
+  "version": "1.0.0",
+  "description": "HarmonyOS Cangjie wrapper for MMKV",
+  "main": "",
+  "author": "ErBW_s",
+  "license": "BSD 3-Clause",
+  "dependencies": {
+    "@tencent/mmkv": "2.4.0",
+  },
+  "compatibleSdkType": "HarmonyOS",
+  "compatibleSdkVersion": "20",
+  "homepage": "https://github.com/ErBWs/mmkv-cj",
+  "repository": "https://github.com/ErBWs/mmkv-cj",
+  "keywords": [
+    "mmkv",
+    "key-value",
+    "storage",
+    "preferences"
+  ]
+}
