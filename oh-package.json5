@@ -4,7 +4,7 @@
   "description": "HarmonyOS Cangjie wrapper for MMKV",
   "main": "",
   "author": "ErBW_s",
-  "license": "BSD 3-Clause",
+  "license": "MIT",
   "dependencies": {
     "@tencent/mmkv": "2.4.0",
   },
