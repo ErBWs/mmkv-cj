@@ -6,6 +6,8 @@ package ohos_app_cangjie_mmkv
 
 import std.collection.ArrayList
 import kit.AbilityKit.ApplicationContext
+import kit.IPCKit.MessageSequence
+import kit.IPCKit.Parcelable
 import ohos_app_cangjie_mmkv.native.*
 
 /**
@@ -459,8 +461,8 @@ public class MMKV {
 
             let str = LibC.mallocCString(key)
             let data = LibC.malloc<Byte>(count: value.size)
-            for (i in value) {
-            	data.write(i)
+            for (i in 0..value.size) {
+                data.write(i, value[i])
             }
             let res = c_encodeBytes_v2(
                 _handle,
@@ -539,6 +541,63 @@ public class MMKV {
             let res = Array<Byte>(Int64(length), { i => CPointer<Byte>(ret).read(i) })
             LibC.free(ret)
             res
+        }
+    }
+
+    /**
+     * Set Parcelable value with customize expiration in seconds.
+     *
+     * @param value Parcelable
+     * @param expiration override the default duration, {@link MMKV.ExpireNever} (0) means never expire.
+     * @returns true if success, false if marshalling or storage fails.
+     */
+    public func encode(
+        key: String,
+        value: Parcelable,
+        expiration!: UInt32 = ExpireNever
+    ): Bool {
+        let sequence = MessageSequence.create()
+        try {
+            if (!value.marshalling(sequence)) {
+                return false
+            }
+
+            let size = sequence.getSize()
+            if (size == 0) {
+                return false
+            }
+
+            sequence.rewindRead(0)
+            let bytes = sequence.readRawDataBuffer(Int64(size))
+            encodeBytes(key, bytes, expiration: expiration)
+        } catch (_) {
+            false
+        } finally {
+            sequence.reclaim()
+        }
+    }
+
+    /**
+     * Decode a Parcelable value into an existing object.
+     *
+     * @param value The target object to populate.
+     * @returns true if the key exists and unmarshalling succeeds, false otherwise.
+     */
+    public func decodeParcelable(key: String, value: Parcelable): Bool {
+        let bytes = decodeBytes(key)
+        if (bytes.isEmpty()) {
+            return false
+        }
+
+        let sequence = MessageSequence.create()
+        try {
+            sequence.writeRawDataBuffer(bytes, bytes.size)
+            sequence.rewindRead(0)
+            value.unmarshalling(sequence)
+        } catch (_) {
+            false
+        } finally {
+            sequence.reclaim()
         }
     }
 
