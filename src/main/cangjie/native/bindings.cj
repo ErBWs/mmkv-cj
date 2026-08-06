@@ -56,6 +56,12 @@ foreign func mmapID(handle: CPointer<Unit>): CString
 
 // Primitive values and byte buffers
 
+foreign func encodeBool(
+    handle: CPointer<Unit>,
+    key: CString,
+    value: Bool
+): Bool
+
 foreign func encodeBool_v2(
     handle: CPointer<Unit>,
     key: CString,
@@ -64,6 +70,12 @@ foreign func encodeBool_v2(
 ): Bool
 
 foreign func decodeBool(handle: CPointer<Unit>, key: CString, defaultValue: Bool): Bool
+
+foreign func encodeInt32(
+    handle: CPointer<Unit>,
+    key: CString,
+    value: Int32
+): Bool
 
 foreign func encodeInt32_v2(
     handle: CPointer<Unit>,
@@ -74,6 +86,12 @@ foreign func encodeInt32_v2(
 
 foreign func decodeInt32(handle: CPointer<Unit>, key: CString, defaultValue: Int32): Int32
 
+foreign func encodeInt64(
+    handle: CPointer<Unit>,
+    key: CString,
+    value: Int64
+): Bool
+
 foreign func encodeInt64_v2(
     handle: CPointer<Unit>,
     key: CString,
@@ -83,6 +101,12 @@ foreign func encodeInt64_v2(
 
 foreign func decodeInt64(handle: CPointer<Unit>, key: CString, defaultValue: Int64): Int64
 
+foreign func encodeDouble(
+    handle: CPointer<Unit>,
+    key: CString,
+    value: Float64
+): Bool
+
 foreign func encodeDouble_v2(
     handle: CPointer<Unit>,
     key: CString,
@@ -91,6 +115,13 @@ foreign func encodeDouble_v2(
 ): Bool
 
 foreign func decodeDouble(handle: CPointer<Unit>, key: CString, defaultValue: Float64): Float64
+
+foreign func encodeBytes(
+    handle: CPointer<Unit>,
+    key: CString,
+    value: CPointer<Unit>,
+    length: UInt64
+): Bool
 
 foreign func encodeBytes_v2(
     handle: CPointer<Unit>,
@@ -242,14 +273,19 @@ protected let c_mmkvInitialize_v2 = mmkvInitialize_v2
 protected let c_getMMKVWithID = getMMKVWithID
 protected let c_getDefaultMMKV = getDefaultMMKV
 protected let c_mmapID = mmapID
+protected let c_encodeBool = encodeBool
 protected let c_encodeBool_v2 = encodeBool_v2
 protected let c_decodeBool = decodeBool
+protected let c_encodeInt32 = encodeInt32
 protected let c_encodeInt32_v2 = encodeInt32_v2
 protected let c_decodeInt32 = decodeInt32
+protected let c_encodeInt64 = encodeInt64
 protected let c_encodeInt64_v2 = encodeInt64_v2
 protected let c_decodeInt64 = decodeInt64
+protected let c_encodeDouble = encodeDouble
 protected let c_encodeDouble_v2 = encodeDouble_v2
 protected let c_decodeDouble = decodeDouble
+protected let c_encodeBytes = encodeBytes
 protected let c_encodeBytes_v2 = encodeBytes_v2
 protected let c_decodeBytes = decodeBytes
 protected let c_reKey = reKey

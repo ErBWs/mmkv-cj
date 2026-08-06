@@ -320,11 +320,14 @@ public class MMKV {
     public func encode(
         key: String,
         value: Bool,
-        expiration!: UInt32 = ExpireNever
+        expiration!: ?UInt32 = None
     ): Bool {
         unsafe {
             let str = LibC.mallocCString(key)
-            let res = c_encodeBool_v2(_handle, str, value, expiration)
+            let res = match (expiration) {
+                case Some(duration) => c_encodeBool_v2(_handle, str, value, duration)
+                case _ => c_encodeBool(_handle, str, value)
+            }
             LibC.free(str)
             res
         }
@@ -354,11 +357,14 @@ public class MMKV {
     public func encode(
         key: String,
         value: Int32,
-        expiration!: UInt32 = ExpireNever
+        expiration!: ?UInt32 = None
     ): Bool {
         unsafe {
             let str = LibC.mallocCString(key)
-            let res = c_encodeInt32_v2(_handle, str, value, expiration)
+            let res = match (expiration) {
+                case Some(duration) => c_encodeInt32_v2(_handle, str, value, duration)
+                case _ => c_encodeInt32(_handle, str, value)
+            }
             LibC.free(str)
             res
         }
@@ -388,11 +394,14 @@ public class MMKV {
     public func encode(
         key: String,
         value: Int64,
-        expiration!: UInt32 = ExpireNever
+        expiration!: ?UInt32 = None
     ): Bool {
         unsafe {
             let str = LibC.mallocCString(key)
-            let res = c_encodeInt64_v2(_handle, str, value, expiration)
+            let res = match (expiration) {
+                case Some(duration) => c_encodeInt64_v2(_handle, str, value, duration)
+                case _ => c_encodeInt64(_handle, str, value)
+            }
             LibC.free(str)
             res
         }
@@ -422,11 +431,14 @@ public class MMKV {
     public func encode(
         key: String,
         value: Float64,
-        expiration!: UInt32 = ExpireNever
+        expiration!: ?UInt32 = None
     ): Bool {
         unsafe {
             let str = LibC.mallocCString(key)
-            let res = c_encodeDouble_v2(_handle, str, value, expiration)
+            let res = match (expiration) {
+                case Some(duration) => c_encodeDouble_v2(_handle, str, value, duration)
+                case _ => c_encodeDouble(_handle, str, value)
+            }
             LibC.free(str)
             res
         }
@@ -452,7 +464,7 @@ public class MMKV {
     private func encodeBytes(
         key: String,
         value: Array<Byte>,
-        expiration!: UInt32 = ExpireNever
+        expiration!: ?UInt32 = None
     ): Bool {
         unsafe {
             if (value.isEmpty()) {
@@ -464,13 +476,21 @@ public class MMKV {
             for (i in 0..value.size) {
                 data.write(i, value[i])
             }
-            let res = c_encodeBytes_v2(
-                _handle,
-                str,
-                CPointer<Unit>(data),
-                UInt64(value.size),
-                expiration
-            )
+            let res = match (expiration) {
+                case Some(duration) => c_encodeBytes_v2(
+                    _handle,
+                    str,
+                    CPointer<Unit>(data),
+                    UInt64(value.size),
+                    duration
+                )
+                case _ => c_encodeBytes(
+                    _handle,
+                    str,
+                    CPointer<Unit>(data),
+                    UInt64(value.size)
+                )
+            }
             LibC.free(data)
             LibC.free(str)
             res
@@ -487,7 +507,7 @@ public class MMKV {
     public func encode(
         key: String,
         value: String,
-        expiration!: UInt32 = ExpireNever
+        expiration!: ?UInt32 = None
     ): Bool {
         encodeBytes(key, value.toArray(), expiration: expiration)
     }
@@ -511,7 +531,7 @@ public class MMKV {
     public func encode(
         key: String,
         value: Array<Byte>,
-        expiration!: UInt32 = ExpireNever
+        expiration!: ?UInt32 = None
     ): Bool {
         encodeBytes(key, value, expiration: expiration)
     }
@@ -541,63 +561,6 @@ public class MMKV {
             let res = Array<Byte>(Int64(length), { i => CPointer<Byte>(ret).read(i) })
             LibC.free(ret)
             res
-        }
-    }
-
-    /**
-     * Set Parcelable value with customize expiration in seconds.
-     *
-     * @param value Parcelable
-     * @param expiration override the default duration, {@link MMKV.ExpireNever} (0) means never expire.
-     * @returns true if success, false if marshalling or storage fails.
-     */
-    public func encode(
-        key: String,
-        value: Parcelable,
-        expiration!: UInt32 = ExpireNever
-    ): Bool {
-        let sequence = MessageSequence.create()
-        try {
-            if (!value.marshalling(sequence)) {
-                return false
-            }
-
-            let size = sequence.getSize()
-            if (size == 0) {
-                return false
-            }
-
-            sequence.rewindRead(0)
-            let bytes = sequence.readRawDataBuffer(Int64(size))
-            encodeBytes(key, bytes, expiration: expiration)
-        } catch (_) {
-            false
-        } finally {
-            sequence.reclaim()
-        }
-    }
-
-    /**
-     * Decode a Parcelable value into an existing object.
-     *
-     * @param value The target object to populate.
-     * @returns true if the key exists and unmarshalling succeeds, false otherwise.
-     */
-    public func decodeParcelable(key: String, value: Parcelable): Bool {
-        let bytes = decodeBytes(key)
-        if (bytes.isEmpty()) {
-            return false
-        }
-
-        let sequence = MessageSequence.create()
-        try {
-            sequence.writeRawDataBuffer(bytes, bytes.size)
-            sequence.rewindRead(0)
-            value.unmarshalling(sequence)
-        } catch (_) {
-            false
-        } finally {
-            sequence.reclaim()
         }
     }
 
